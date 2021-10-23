@@ -9,8 +9,37 @@ import os
 import pygame
 
 
-def intro_view() -> None:
-    pass
+def generate_image(filename):
+    """Generates an image containing the sprite on the given
+    filename.
+
+    Args:
+        filename: The .png file where the function will get the image.
+
+    Returns:
+        A pygame Surface object that contains the sprite of the file.
+    """
+
+    image = pygame.image.load(os.path.join("game_data", filename))
+    return image
+
+
+def setup_intro_view(screen_rect, logo_icon_rect, logo_title_rect):
+    """Setups the rects of the sprites to the assigned positions."""
+
+    logo_icon_rect.centerx = screen_rect.centerx
+    logo_icon_rect.centery = screen_rect.centery
+
+    logo_title_rect.centerx = screen_rect.centerx
+    logo_title_rect.centery = screen_rect.centery + 74
+
+
+def intro_view(screen, logo_icon_image, logo_title_image, logo_icon_rect,
+               logo_title_rect) -> None:
+    """Draws the sprites of the introduction view."""
+
+    screen.blit(logo_icon_image, logo_icon_rect)
+    screen.blit(logo_title_image, logo_title_rect)
 
 
 def setup_main_menu_view(screen_rect, game_title_rect, play_button_off_rect,
@@ -19,6 +48,7 @@ def setup_main_menu_view(screen_rect, game_title_rect, play_button_off_rect,
     """Setups the sprites related to the main menu."""
 
     padding = 10
+
     game_title_rect.centerx = screen_rect.centerx
     game_title_rect.top = screen_rect.top + padding
 
@@ -38,7 +68,7 @@ def main_menu_view(screen, game_title_image, play_button_off_image,
                    settings_button_off_image, quit_button_off_image,
                    game_title_rect, play_button_off_rect,
                    settings_button_off_rect, quit_button_off_rect) -> None:
-    """Draws the sprites."""
+    """Draws the sprites of the main view."""
 
     screen.blit(game_title_image, game_title_rect)
     screen.blit(play_button_off_image, play_button_off_rect)
@@ -55,26 +85,52 @@ def main() -> None:
     screen_rect = screen.get_rect()
 
     # Load images
-    game_icon_image = pygame.image.load(os.path.join("game_data", "icon.png"))
-    game_title_image = pygame.image.load(
-        os.path.join("game_data", "game_title.png"))
-    play_button_off_image = pygame.image.load(
-        os.path.join("game_data", "play_button_off.png"))
-    settings_button_off_image = pygame.image.load(
-        os.path.join("game_data", "settings_button_off.png"))
-    quit_button_off_image = pygame.image.load(
-        os.path.join("game_data", "quit_button_off.png"))
+    logo_icon_image = generate_image("moura_cat.png")
+    logo_title_image = generate_image("logo_title.png")
+    game_icon_image = generate_image("icon.png")
+    game_title_image = generate_image("game_title.png")
+    play_button_image = generate_image("play_button_off.png")
+    settings_button_image = generate_image("settings_button_off.png")
+    quit_button_image = generate_image("quit_button_off.png")
 
+    logo_icon_rect = logo_icon_image.get_rect()
+    logo_title_rect = logo_title_image.get_rect()
     game_title_rect = game_title_image.get_rect()
-    play_button_off_rect = play_button_off_image.get_rect()
-    settings_button_off_rect = settings_button_off_image.get_rect()
-    quit_button_off_rect = quit_button_off_image.get_rect()
+    play_button_rect = play_button_image.get_rect()
+    settings_button_rect = settings_button_image.get_rect()
+    quit_button_rect = quit_button_image.get_rect()
 
-    setup_main_menu_view(screen_rect, game_title_rect, play_button_off_rect,
-                         settings_button_off_rect, quit_button_off_rect)
+    setup_intro_view(screen_rect, logo_icon_rect, logo_title_rect)
+    setup_main_menu_view(screen_rect, game_title_rect, play_button_rect,
+                         settings_button_rect, quit_button_rect)
 
     pygame.display.set_caption("Game Main Menu Sample")
     pygame.display.set_icon(game_icon_image)
+
+    # FIXME: It needs to be decided what it's better: Use more CPU or RAM
+    def animate_main_menu_view():
+        """Animate the buttons of the menu view."""
+
+        nonlocal play_button_image
+        nonlocal settings_button_image
+        nonlocal quit_button_image
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        if play_button_rect.collidepoint(mouse_pos):
+            play_button_image = generate_image("play_button_on.png")
+        else:
+            play_button_image = generate_image("play_button_off.png")
+
+        if settings_button_rect.collidepoint(mouse_pos):
+            settings_button_image = generate_image("settings_button_on.png")
+        else:
+            settings_button_image = generate_image("settings_button_off.png")
+
+        if quit_button_rect.collidepoint(mouse_pos):
+            quit_button_image = generate_image("quit_button_on.png")
+        else:
+            quit_button_image = generate_image("quit_button_off.png")
 
     while True:
         for event in pygame.event.get():
@@ -82,8 +138,9 @@ def main() -> None:
                 pygame.quit()
                 exit()
         screen.fill((170, 170, 170))
-        main_menu_view(screen, game_title_image, play_button_off_image,
-                       settings_button_off_image, quit_button_off_image,
-                       game_title_rect, play_button_off_rect,
-                       settings_button_off_rect, quit_button_off_rect)
+        main_menu_view(screen, game_title_image, play_button_image,
+                       settings_button_image, quit_button_image,
+                       game_title_rect, play_button_rect,
+                       settings_button_rect, quit_button_rect)
+        animate_main_menu_view()
         pygame.display.update()
