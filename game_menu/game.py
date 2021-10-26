@@ -81,6 +81,7 @@ def main() -> None:
 
     pygame.init()
 
+    clock = pygame.time.Clock()
     screen = pygame.display.set_mode((600, 400))
     screen_rect = screen.get_rect()
 
@@ -107,15 +108,24 @@ def main() -> None:
     pygame.display.set_caption("Game Main Menu Sample")
     pygame.display.set_icon(game_icon_image)
 
+    yspeed = 7
     # FIXME: It needs to be decided what it's better: Use more CPU or RAM
     def animate_main_menu_view():
         """Animate the buttons of the menu view."""
-
+        nonlocal yspeed
+        nonlocal screen_rect
+        nonlocal game_title_rect
         nonlocal play_button_image
         nonlocal settings_button_image
         nonlocal quit_button_image
 
         mouse_pos = pygame.mouse.get_pos()
+        print(game_title_rect.bottom)
+        print(game_title_rect.top)
+        if game_title_rect.bottom >= 120 \
+           or game_title_rect.top <= screen_rect.top:
+            yspeed *= -1
+        game_title_rect.y += int(yspeed)
 
         if play_button_rect.collidepoint(mouse_pos):
             play_button_image = generate_image("play_button_on.png")
@@ -143,4 +153,5 @@ def main() -> None:
                        game_title_rect, play_button_rect,
                        settings_button_rect, quit_button_rect)
         animate_main_menu_view()
+        clock.tick(40)
         pygame.display.update()
