@@ -148,7 +148,7 @@ def main() -> None:
             quit_button_image = generate_image("quit_button_off.png")
 
     alpha_value = 255
-    factor = 1
+    factor = 2
 
     backwards = False
     on_intro = True
@@ -161,6 +161,7 @@ def main() -> None:
         screen.fill((255, 255, 255))
 
         if on_intro:
+            # Introduction
             if fade_counter == 3:
                 # Draw and animate the next view while fades out.
                 main_menu_view(screen, game_title_image, play_button_image,
@@ -171,20 +172,25 @@ def main() -> None:
             else:
                 intro_view(screen, logo_icon_image, logo_title_image,
                            logo_icon_rect, logo_title_rect)
-            screen.blit(white_background, white_background_rect)
+
+            # Controls the fade alpha value
             alpha_value += factor
             if (alpha_value > 255 and not backwards) \
             or (alpha_value < 0 and backwards):
                 backwards = not backwards
                 factor *= -1
                 fade_counter += 1
+
+            # Draw the fade effect
             white_background.set_alpha(alpha_value)
             white_background.fill((255, 255, 255))
+            screen.blit(white_background, white_background_rect)
 
             if fade_counter == 4:
                 # Ends fade effect completely
                 on_intro = False
         else:
+            # Game loop
             main_menu_view(screen, game_title_image, play_button_image,
                           settings_button_image, quit_button_image,
                           game_title_rect, play_button_rect,
