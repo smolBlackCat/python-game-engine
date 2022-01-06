@@ -2,8 +2,9 @@
 game interface.
 """
 
-import pygame
+import textwrap
 
+import pygame
 
 class Button(pygame.sprite.Sprite):
     """This class represents a interface button on a game. The button can have
@@ -48,23 +49,23 @@ class Button(pygame.sprite.Sprite):
 
         self.screen.blit(self.current_sprite, self.rect)
 
-    def update(self):
+    def update(self, event):
         """Updates the button according to the user actions.
         
         User actions == Hover the mouse on the button, Click the
         button and etc.
         """
-        # Animation Code
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             self.current_sprite = self.button_on_image
             if pygame.mouse.get_pressed()[0]:
                 self.current_sprite = self.button_clicked_image
-                try:
-                    self.action()
-                except TypeError:
-                    pass
         else:
             self.current_sprite = self.button_off_image
+        if event.type == pygame.MOUSEBUTTONUP:
+            if self.rect.collidepoint(event.pos) and event.button == 1:
+                self.current_sprite = self.button_off_image
+                if self.action is not None:
+                    self.action()
 
 
 class Label(pygame.sprite.Sprite):
@@ -105,47 +106,11 @@ class Label(pygame.sprite.Sprite):
         if self.animation is not None:
             args = [self] + self.animation_args
             self.animation(*args)
-    
-    @staticmethod
-    def trim_text(text, chars_per_line):
-        """It trims text based on how much characters for each
-        line.
-        
-        Args:
-        
-            text:
-                The str object text to be trimmed.
-            
-            chars_per_line:
-                The amount of characters per line.
-        """
 
-        texts = []
-        line = []
-        chars_number = chars_per_line
-        for word in text.split(" "):
-            if (chars_number - len(word) < 0):
-                texts.append(line.copy())
-                chars_number = chars_per_line
-                line.clear()
 
-                chars_number -= len(word)
-                line.append(word)
-            else:
-                chars_number -= len(word)
-                line.append(word)
-        if line:
-            texts.append(line)
-    
-        paragraph = [" ".join(word) for word in texts]
-        return paragraph
-
-    
-    # TODO: Find a way to get the correct size for the text background
-    # TODO: Organise this code. It stinks
     @staticmethod
     def from_text(screen, text, colour, size, chars_per_line, y_padding, 
-                  bold=False, italic=False):
+                  bold=False, italic=False, antialised=False):
         """Creates a label object based on a text.
 
         Args:
@@ -174,8 +139,8 @@ class Label(pygame.sprite.Sprite):
 
         font = pygame.font.SysFont(None, size, bold, italic)
         rendered_paragraph = [
-            font.render(phrase, True, colour)
-            for phrase in Label.trim_text(text, chars_per_line)
+            font.render(phrase, antialised, colour)
+            for phrase in textwrap.wrap(text, chars_per_line)
         ]
 
         height = sum(
@@ -187,7 +152,6 @@ class Label(pygame.sprite.Sprite):
         row = 0
         for phrase in rendered_paragraph:
             rect = phrase.get_rect()
-            rect.x = 0
             rect.y = row
             text_bg.blit(phrase, rect)
             row += font.get_height() + y_padding
