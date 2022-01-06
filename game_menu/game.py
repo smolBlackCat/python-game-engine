@@ -5,6 +5,9 @@ game main menu.
 """
 
 import os
+import sys
+
+from . import interface
 
 import pygame
 
@@ -24,56 +27,24 @@ def generate_image(filename):
     return image
 
 
-def setup_intro_view(screen_rect, logo_icon_rect, logo_title_rect):
-    """Setups the rects of the sprites to the assigned positions."""
-
-    logo_icon_rect.centerx = screen_rect.centerx
-    logo_icon_rect.centery = screen_rect.centery
-
-    logo_title_rect.centerx = screen_rect.centerx
-    logo_title_rect.centery = screen_rect.centery + 74
-
-
-def intro_view(screen, logo_icon_image, logo_title_image, logo_icon_rect,
-               logo_title_rect) -> None:
-    """Draws the sprites of the introduction view."""
-
-    screen.blit(logo_icon_image, logo_icon_rect)
-    screen.blit(logo_title_image, logo_title_rect)
+def main_menu_view(screen, game_title_label, play_button, settings_button,
+                   quit_button):
+    screen.fill((0, 0, 80))
+    interface.main_menu_view(game_title_label, play_button, settings_button,
+        quit_button
+    )
+    game_title_label.update()
 
 
-def setup_main_menu_view(screen_rect, game_title_rect, play_button_off_rect,
-                         settings_button_off_rect,
-                         quit_button_off_rect) -> None:
-    """Setups the sprites related to the main menu."""
-
-    padding = 10
-
-    game_title_rect.centerx = screen_rect.centerx
-    game_title_rect.top = screen_rect.top + padding
-
-    play_button_off_rect.midleft = screen_rect.midleft
-    play_button_off_rect.x += padding
-
-    settings_button_off_rect.midleft = screen_rect.midleft
-    settings_button_off_rect.y += 35 + padding
-    settings_button_off_rect.x += padding
-
-    quit_button_off_rect.midleft = screen_rect.midleft
-    quit_button_off_rect.y += 80 + padding
-    quit_button_off_rect.x += padding
+def main_menu_settings_view(screen, info_label, return_button):
+    screen.fill((12, 12, 12))
+    info_label.draw()
+    return_button.draw()
 
 
-def main_menu_view(screen, game_title_image, play_button_off_image,
-                   settings_button_off_image, quit_button_off_image,
-                   game_title_rect, play_button_off_rect,
-                   settings_button_off_rect, quit_button_off_rect) -> None:
-    """Draws the sprites of the main view."""
-
-    screen.blit(game_title_image, game_title_rect)
-    screen.blit(play_button_off_image, play_button_off_rect)
-    screen.blit(settings_button_off_image, settings_button_off_rect)
-    screen.blit(quit_button_off_image, quit_button_off_rect)
+def quit_game():
+    pygame.quit()
+    sys.exit()
 
 
 def main() -> None:
@@ -81,97 +52,105 @@ def main() -> None:
 
     pygame.init()
 
+    # Pygame setup
     SCREEN_SIZE = (600, 400)
-
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(SCREEN_SIZE)
+    pygame.display.set_caption("Game Main Menu Sample")
+    pygame.display.set_icon(generate_image("icon.png"))
     screen_rect = screen.get_rect()
 
-    logo_icon_image = generate_image("moura_cat.png")
-    logo_title_image = generate_image("logo_title.png")
-    game_icon_image = generate_image("icon.png")
-    game_title_image = generate_image("game_title.png")
-    play_button_image = generate_image("play_button_off.png")
-    settings_button_image = generate_image("settings_button_off.png")
-    quit_button_image = generate_image("quit_button_off.png")
+    # Intro view setup
+    logo_icon = interface.Label.from_image(screen,
+    generate_image("moura_cat.png"))
+    logo_title = interface.Label.from_image(screen,
+    generate_image("logo_title.png"))
+    interface.setup_intro_view(screen_rect, logo_icon, logo_title)
+
+    # Main Menu view setup
+    game_title_label = interface.Label.from_image(screen,
+        generate_image("game_title.png"),
+        interface.floating_animation,
+        120, screen_rect.top)
+    play_button = interface.Button(screen,
+        generate_image("play_button_on.png"),
+        generate_image("play_button_off.png"),
+        generate_image("play_button_clicked.png"))
+    settings_button = interface.Button(screen,
+        generate_image("settings_button_on.png"),
+        generate_image("settings_button_off.png"),
+        generate_image("settings_button_clicked.png"))
+    quit_button = interface.Button(screen,
+        generate_image("quit_button_on.png"),
+        generate_image("quit_button_off.png"),
+        generate_image("quit_button_clicked.png"),
+        quit_game)
+    interface.setup_main_menu_view(screen_rect, game_title_label, play_button,
+                                   settings_button, quit_button
+    )
+
+    # Main Menu settings view setup
+    info_label = interface.Label.from_text(screen,
+        "This is the settings. You can change whatever you want here, as long"
+        + " it feels useful to do that. For now, this setting view doesn't "
+        + "have anything that interesting, just this return button below this "
+        +"text.", (255, 255, 255), 32, 40, 2, antialised=True)
+    return_button = interface.Button(screen,
+        generate_image("return_button_on.png"),
+        generate_image("return_button_off.png"),
+        generate_image("return_button_clicked.png"))
+    info_label.rect.midtop = screen_rect.midtop
+    return_button.rect.midbottom = screen_rect.midbottom
+
+    views = {
+        "main_menu": lambda: main_menu_view(
+            screen, game_title_label, play_button, settings_button, quit_button
+        ),
+        "main_menu_settings": lambda: main_menu_settings_view(
+            screen, info_label,return_button
+        ),
+        "main_menu_play": None,
+        "current_view": "main_menu"
+    }
+
+    settings_button.action = lambda: views.update(
+        current_view="main_menu_settings"
+    )
+    return_button.action = lambda: views.update(current_view="main_menu")
 
     white_background = pygame.Surface(SCREEN_SIZE)
     white_background = white_background.convert_alpha()
-
-    logo_icon_rect = logo_icon_image.get_rect()
-    logo_title_rect = logo_title_image.get_rect()
-    game_title_rect = game_title_image.get_rect()
-    play_button_rect = play_button_image.get_rect()
-    settings_button_rect = settings_button_image.get_rect()
-    quit_button_rect = quit_button_image.get_rect()
-
     white_background_rect = white_background.get_rect()
     white_background_rect.center = screen_rect.center
 
-    setup_intro_view(screen_rect, logo_icon_rect, logo_title_rect)
-    setup_main_menu_view(screen_rect, game_title_rect, play_button_rect,
-                         settings_button_rect, quit_button_rect)
-
-    pygame.display.set_caption("Game Main Menu Sample")
-    pygame.display.set_icon(game_icon_image)
-
-    yspeed = 7
-    # FIXME: It needs to be decided what it's better: Use more CPU or RAM
-    def animate_main_menu_view():
-        """Animate the buttons of the menu view."""
-        nonlocal yspeed
-        nonlocal screen_rect
-        nonlocal game_title_rect
-        nonlocal play_button_image
-        nonlocal settings_button_image
-        nonlocal quit_button_image
-
-        mouse_pos = pygame.mouse.get_pos()
-        if game_title_rect.bottom >= 120 \
-           or game_title_rect.top <= screen_rect.top:
-            yspeed *= -1
-        game_title_rect.y += int(yspeed)
-
-        if play_button_rect.collidepoint(mouse_pos):
-            play_button_image = generate_image("play_button_on.png")
-        else:
-            play_button_image = generate_image("play_button_off.png")
-
-        if settings_button_rect.collidepoint(mouse_pos):
-            settings_button_image = generate_image("settings_button_on.png")
-        else:
-            settings_button_image = generate_image("settings_button_off.png")
-
-        if quit_button_rect.collidepoint(mouse_pos):
-            quit_button_image = generate_image("quit_button_on.png")
-        else:
-            quit_button_image = generate_image("quit_button_off.png")
-
     alpha_value = 255
     factor = 2
-
     backwards = False
     on_intro = True
     fade_counter = 0
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-        screen.fill((255, 255, 255))
+                quit_game()
+            
+            if views["current_view"] == "main_menu":
+                play_button.update(event)
+                settings_button.update(event)
+                quit_button.update(event)
+            elif views["current_view"] == "main_menu_settings":
+                return_button.update(event)
 
+        screen.fill((255, 255, 255))
         if on_intro:
             # Introduction
             if fade_counter == 3:
                 # Draw and animate the next view while fades out.
-                main_menu_view(screen, game_title_image, play_button_image,
-                          settings_button_image, quit_button_image,
-                          game_title_rect, play_button_rect,
-                          settings_button_rect, quit_button_rect)
-                animate_main_menu_view()
+                main_menu_view(screen, game_title_label, play_button,
+                    settings_button, quit_button
+                )
             else:
-                intro_view(screen, logo_icon_image, logo_title_image,
-                           logo_icon_rect, logo_title_rect)
+                interface.intro_view(logo_icon, logo_title)
 
             # Controls the fade alpha value
             alpha_value += factor
@@ -191,11 +170,8 @@ def main() -> None:
                 on_intro = False
         else:
             # Game loop
-            main_menu_view(screen, game_title_image, play_button_image,
-                          settings_button_image, quit_button_image,
-                          game_title_rect, play_button_rect,
-                          settings_button_rect, quit_button_rect)
-            animate_main_menu_view()
+            current_view = views["current_view"]
+            views[current_view]()
 
         clock.tick(60)
         pygame.display.update()
