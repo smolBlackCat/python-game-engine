@@ -6,6 +6,7 @@ import textwrap
 
 import pygame
 
+
 class Button(pygame.sprite.Sprite):
     """This class represents a interface button on a game. The button can have
     any look, as it has the off and on variants.
@@ -14,7 +15,7 @@ class Button(pygame.sprite.Sprite):
     def __init__(self, screen, button_on_image, button_off_image,
                  button_clicked_image, action=None):
         """Initialises the Button object.
-        
+
         Args:
             screen:
                 A pygame Surface object that represents the screen.
