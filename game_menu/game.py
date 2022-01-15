@@ -7,9 +7,9 @@ game main menu.
 import os
 import sys
 
-from . import interface
-
 import pygame
+
+from . import scene
 
 
 def generate_image(filename):
@@ -27,26 +27,12 @@ def generate_image(filename):
     return image
 
 
-def main_menu_view(screen, game_title_label, play_button, settings_button,
-                   quit_button):
-    screen.fill((0, 0, 80))
-    interface.main_menu_view(game_title_label, play_button, settings_button,
-        quit_button
-    )
-    game_title_label.update()
-
-
-def main_menu_settings_view(screen, info_label, return_button):
-    screen.fill((12, 12, 12))
-    info_label.draw()
-    return_button.draw()
-
-
 def quit_game():
     pygame.quit()
     sys.exit()
 
 
+# TODO: Update this code with the new implemented scene manager.
 def main() -> None:
     """Main Program."""
 
@@ -58,120 +44,26 @@ def main() -> None:
     screen = pygame.display.set_mode(SCREEN_SIZE)
     pygame.display.set_caption("Game Main Menu Sample")
     pygame.display.set_icon(generate_image("icon.png"))
-    screen_rect = screen.get_rect()
 
-    # Intro view setup
-    logo_icon = interface.Label.from_image(screen,
-    generate_image("moura_cat.png"))
-    logo_title = interface.Label.from_image(screen,
-    generate_image("logo_title.png"))
-    interface.setup_intro_view(screen_rect, logo_icon, logo_title)
-
-    # Main Menu view setup
-    game_title_label = interface.Label.from_image(screen,
-        generate_image("game_title.png"),
-        interface.floating_animation,
-        120, screen_rect.top)
-    play_button = interface.Button(screen,
-        generate_image("play_button_on.png"),
-        generate_image("play_button_off.png"),
-        generate_image("play_button_clicked.png"))
-    settings_button = interface.Button(screen,
-        generate_image("settings_button_on.png"),
-        generate_image("settings_button_off.png"),
-        generate_image("settings_button_clicked.png"))
-    quit_button = interface.Button(screen,
-        generate_image("quit_button_on.png"),
-        generate_image("quit_button_off.png"),
-        generate_image("quit_button_clicked.png"),
-        quit_game)
-    interface.setup_main_menu_view(screen_rect, game_title_label, play_button,
-                                   settings_button, quit_button
-    )
-
-    # Main Menu settings view setup
-    info_label = interface.Label.from_text(screen,
-        "This is the settings. You can change whatever you want here, as long"
-        + " it feels useful to do that. For now, this setting view doesn't "
-        + "have anything that interesting, just this return button below this "
-        +"text.", (255, 255, 255), 32, 40, 2, antialised=True)
-    return_button = interface.Button(screen,
-        generate_image("return_button_on.png"),
-        generate_image("return_button_off.png"),
-        generate_image("return_button_clicked.png"))
-    info_label.rect.midtop = screen_rect.midtop
-    return_button.rect.midbottom = screen_rect.midbottom
-
-    views = {
-        "main_menu": lambda: main_menu_view(
-            screen, game_title_label, play_button, settings_button, quit_button
-        ),
-        "main_menu_settings": lambda: main_menu_settings_view(
-            screen, info_label,return_button
-        ),
-        "main_menu_play": None,
-        "current_view": "main_menu"
-    }
-
-    settings_button.action = lambda: views.update(
-        current_view="main_menu_settings"
-    )
-    return_button.action = lambda: views.update(current_view="main_menu")
-
-    white_background = pygame.Surface(SCREEN_SIZE)
-    white_background = white_background.convert_alpha()
-    white_background_rect = white_background.get_rect()
-    white_background_rect.center = screen_rect.center
-
-    alpha_value = 255
-    factor = 2
-    backwards = False
-    on_intro = True
-    fade_counter = 0
-
+    # Game setup
+    scene_manager = scene.SceneManager()
+    intro_scene = scene.IntroScene(screen)
+    main_menu_scene = scene.MainMenuScene(screen)
+    scene_manager.add("game_intro", intro_scene)
+    scene_manager.add("main_menu", main_menu_scene)
+    scene_manager.initial_view("game_intro")
     while True:
         for event in pygame.event.get():
+            print(event)
             if event.type == pygame.QUIT:
                 quit_game()
-            
-            if views["current_view"] == "main_menu":
-                play_button.update(event)
-                settings_button.update(event)
-                quit_button.update(event)
-            elif views["current_view"] == "main_menu_settings":
-                return_button.update(event)
+            if scene_manager.current_view == "game_intro":
+                intro_scene.update_on_event(event)
+            elif scene_manager.current_view == "main_menu":
+                main_menu_scene.update_on_event(event)
 
-        screen.fill((255, 255, 255))
-        if on_intro:
-            # Introduction
-            if fade_counter == 3:
-                # Draw and animate the next view while fades out.
-                main_menu_view(screen, game_title_label, play_button,
-                    settings_button, quit_button
-                )
-            else:
-                interface.intro_view(logo_icon, logo_title)
+        # Game loop
+        scene_manager.show()
 
-            # Controls the fade alpha value
-            alpha_value += factor
-            if (alpha_value > 255 and not backwards) \
-            or (alpha_value < 0 and backwards):
-                backwards = not backwards
-                factor *= -1
-                fade_counter += 1
-
-            # Draw the fade effect
-            white_background.set_alpha(alpha_value)
-            white_background.fill((255, 255, 255))
-            screen.blit(white_background, white_background_rect)
-
-            if fade_counter == 4:
-                # Ends fade effect completely
-                on_intro = False
-        else:
-            # Game loop
-            current_view = views["current_view"]
-            views[current_view]()
-
-        clock.tick(60)
         pygame.display.update()
+        clock.tick(60)
