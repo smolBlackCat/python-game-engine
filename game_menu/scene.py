@@ -82,7 +82,7 @@ class MainMenuScene(Scene):
 
         self.game_title = interface.Label(
             screen, pygame.image.load("game_data/game_title.png"),
-            interface.floating_animation, 120, self.screen_rect.top)
+            effects.floating_animation, 120, self.screen_rect.top)
         self.play_button = interface.Button(
             screen, pygame.image.load("game_data/play_button_on.png"),
             pygame.image.load("game_data/play_button_off.png"),
