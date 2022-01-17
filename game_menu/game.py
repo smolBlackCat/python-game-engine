@@ -32,7 +32,6 @@ def quit_game():
     sys.exit()
 
 
-# TODO: Update this code with the new implemented scene manager.
 def main() -> None:
     """Main Program."""
 

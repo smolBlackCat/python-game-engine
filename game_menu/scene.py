@@ -128,7 +128,6 @@ class MainMenuScene(Scene):
         self.quit_button.update(event)
 
 
-# TODO: Look for a way of making transitions between scenes.
 class SceneManager:
     """Manages the scenes in the main thread of the running game."""
 

@@ -22,7 +22,6 @@ class Transition:
         self.fx_object = None
 
 
-# TODO: Implement transition class
 class FadeTransition(Transition):
     """Class responsible for manipulating the Surface in a way that
     the screens is fading.
