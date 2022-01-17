@@ -71,7 +71,11 @@ class IntroScene(Scene):
     def update_on_event(self, event):
         if event.type == IntroScene.END_INTRO:
             print("changing view")
-            self.scene_manager.change_view("main_menu")
+            self.scene_manager.change_view(
+                "main_menu",
+                effects.FadeTransition(
+                    self.screen, self.scene_manager, "main_menu",
+                    (0, 0, 0), 4))
 
 
 class MainMenuScene(Scene):
@@ -133,10 +137,8 @@ class SceneManager:
 
         self.views = dict()
         self.on_transition = False
+        self.fx_object = None
         self.current_view = None
-
-        # After a transition it becomes the current view.
-        self.new_view = None
 
     def add(self, view_name, scene_object):
         """Adds a view to the scene manager.
@@ -156,9 +158,18 @@ class SceneManager:
         self.views[view_name] = scene_object
 
     def show(self):
-        """Shows the current view."""
+        """Shows the current view. This function may not have only
+        one behavior
+        """
 
         self.views[self.current_view].show()
+        if self.on_transition:
+            self.fx_object.animate()
+
+    def _change_view(self, view_name):
+        """It changes the current view directly."""
+
+        self.current_view = view_name
 
     def change_view(self, view_name, fx=None):
         """It changes the current scene with a special effect or
@@ -173,12 +184,13 @@ class SceneManager:
                 A class that is responsible for a transition of
                 views. When none, the view is changed abruptly
         """
-
-        if fx is not None:
-            pass
-        else:
-            # Changes the view abruptly.
-            self.current_view = view_name
+        if view_name != self.current_view:
+            if fx is not None:
+                self.fx_object = fx
+                self.on_transition = True
+            else:
+                # Changes the view abruptly.
+                self._change_view(view_name)
 
     def initial_view(self, view_name):
         """Sets the initial view for the scene manager."""
