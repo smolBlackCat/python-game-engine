@@ -4,32 +4,9 @@ This is not a game actually, it's just my own implementation of a
 game main menu.
 """
 
-import os
-import sys
-
 import pygame
 
-from . import scene
-
-
-def generate_image(filename):
-    """Generates an image containing the sprite on the given
-    filename.
-
-    Args:
-        filename: The .png file where the function will get the image.
-
-    Returns:
-        A pygame Surface object that contains the sprite of the file.
-    """
-
-    image = pygame.image.load(os.path.join("game_data", filename))
-    return image
-
-
-def quit_game():
-    pygame.quit()
-    sys.exit()
+from . import scene, utils
 
 
 def main() -> None:
@@ -42,7 +19,7 @@ def main() -> None:
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(SCREEN_SIZE)
     pygame.display.set_caption("Game Main Menu Sample")
-    pygame.display.set_icon(generate_image("icon.png"))
+    pygame.display.set_icon(utils.load_image("icon.png"))
 
     # Game setup
     scene_manager = scene.SceneManager()
@@ -51,11 +28,11 @@ def main() -> None:
     scene_manager.add("game_intro", intro_scene)
     scene_manager.add("main_menu", main_menu_scene)
     scene_manager.initial_view("game_intro")
-    while True:
+    running = True
+    while running:
         for event in pygame.event.get():
-            print(event)
             if event.type == pygame.QUIT:
-                quit_game()
+                running = False
             if scene_manager.current_view == "game_intro":
                 intro_scene.update_on_event(event)
             elif scene_manager.current_view == "main_menu":
@@ -66,3 +43,5 @@ def main() -> None:
 
         pygame.display.update()
         clock.tick(60)
+
+    pygame.quit()

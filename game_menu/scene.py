@@ -3,6 +3,7 @@ import pygame
 from game_menu import interface
 
 from . import effects
+from . import utils
 
 
 class Scene:
@@ -52,9 +53,9 @@ class IntroScene(Scene):
         super().__init__(screen)
 
         self.logo_icon = interface.Label.from_image(
-            screen, pygame.image.load("game_data/moura_cat.png"))
+            screen, utils.load_image("game_intro/moura_cat.png"))
         self.logo_title = interface.Label.from_image(
-            screen, pygame.image.load("game_data/logo_title.png"))
+            screen, utils.load_image("game_intro/logo_title.png"))
 
         self.logo_icon.rect.centerx = self.screen_rect.centerx
         self.logo_icon.rect.centery = self.screen_rect.centery
@@ -85,20 +86,20 @@ class MainMenuScene(Scene):
         super().__init__(screen)
 
         self.game_title = interface.Label(
-            screen, pygame.image.load("game_data/game_title.png"),
+            screen, utils.load_image("main_menu/game_title.png"),
             effects.floating_animation, 120, self.screen_rect.top)
         self.play_button = interface.Button(
-            screen, pygame.image.load("game_data/play_button_on.png"),
-            pygame.image.load("game_data/play_button_off.png"),
-            pygame.image.load("game_data/play_button_clicked.png"))
+            screen, utils.load_image("main_menu/play_button_on.png"),
+            utils.load_image("main_menu/play_button_off.png"),
+            utils.load_image("main_menu/play_button_clicked.png"))
         self.settings_button = interface.Button(
-            screen, pygame.image.load("game_data/settings_button_on.png"),
-            pygame.image.load("game_data/settings_button_off.png"),
-            pygame.image.load("game_data/settings_button_clicked.png"))
+            screen, utils.load_image("main_menu/settings_button_on.png"),
+            utils.load_image("main_menu/settings_button_off.png"),
+            utils.load_image("main_menu/settings_button_clicked.png"))
         self.quit_button = interface.Button(
-            screen, pygame.image.load("game_data/quit_button_on.png"),
-            pygame.image.load("game_data/quit_button_off.png"),
-            pygame.image.load("game_data/quit_button_clicked.png"))
+            screen, utils.load_image("main_menu/quit_button_on.png"),
+            utils.load_image("main_menu/quit_button_off.png"),
+            utils.load_image("main_menu/quit_button_clicked.png"))
 
         padding = 10
         self.game_title.rect.centerx = self.screen_rect.centerx
