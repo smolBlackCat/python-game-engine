@@ -1,10 +1,14 @@
-=======================
-Game Main Menu Template
-=======================
+========================
+My personal game library
+========================
 
-Since I did have a lot of free time, I decided to create a kind of
-main menu. In this app, basically I've implemented some animations
-and special effects on it. Like a fade-in and fade-out.
+This is my own "game engine" I made to create small games to practise
+my game development skills. It's not a complex project, it just has
+some code here and there to handle:
+* scenes
+* interface objects (i.e buttons, labels etc)
+* backgrounds
+* animations
 
 Requirements
 ============
@@ -14,6 +18,8 @@ Requirements
 
 Demonstration
 =============
+
+Fully main menu sample
 
 .. image:: docs/main_menu.png
 
