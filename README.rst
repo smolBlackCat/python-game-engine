@@ -5,6 +5,7 @@ My personal game library
 This is my own "game engine" I made to create small games to practise
 my game development skills. It's not a complex project, it just has
 some code here and there to handle:
+
 * scenes
 * interface objects (i.e buttons, labels etc)
 * backgrounds
@@ -21,7 +22,7 @@ Demonstration
 
 Fully main menu sample
 
-.. image:: docs/main_menu.png
+.. image:: docs/examples/main_menu.png
 
 Authors
 =======
