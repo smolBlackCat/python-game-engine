@@ -21,7 +21,7 @@ Demonstration
 
 Fully main menu sample
 
-.. image:: docs/main_menu.png
+.. image:: docs/examples/main_menu.png
 
 Authors
 =======
