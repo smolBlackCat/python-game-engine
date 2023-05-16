@@ -8,6 +8,8 @@ from . import scene
 class Game:
     """Base class for implementing specific game instances."""
 
+    FPS = 60
+
     def __init__(self, screen_width: int, screen_height: int, name: str,
                  icon: pygame.Surface = None):
         pygame.init()
@@ -22,12 +24,16 @@ class Game:
             pygame.display.set_icon(icon)
         self.scene_manager = scene.SceneManager()
         self.clock = pygame.time.Clock()
-        self.setup_scenes()
 
-    def setup_scenes(self) -> None:
-        """Sets up the scenes of the game. This method is the method
-        to be overloaded by children classes implementing this class.
-        """
+    def add_scene(self, scene_id, scene):
+        """Adds scene to game."""
+
+        self.scene_manager.add(scene_id, scene)
+
+    def set_initial_view(self, scene_id):
+        """Set the initial scene of the game"""
+
+        self.scene_manager.initial_view(scene_id)
 
     def start(self) -> None:
         """Main loop of the game."""
@@ -43,7 +49,7 @@ class Game:
             self.scene_manager.update()
 
             pygame.display.update()
-            self.clock.tick(60)
+            self.clock.tick(self.FPS)
         pygame.quit()
 
     @property
