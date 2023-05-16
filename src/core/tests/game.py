@@ -19,7 +19,6 @@ def main():
     game_ = game.Game(600, 400, "Game example")
 
     game_.add_scene("main_scene", MainScene(game_.screen))
-    game_.set_initial_view("main_scene")
 
     game_.start()
 
