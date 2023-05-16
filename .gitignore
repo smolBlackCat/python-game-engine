@@ -9,3 +9,4 @@ __pycache__
 
 # Ignore build files
 dist/
+build/
