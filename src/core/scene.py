@@ -83,9 +83,12 @@ class SceneManager:
             scene: Any Scene object.
         """
 
+        if not self.scenes:
+            self.current_scene = scene_id
+
         scene.scene_manager = self
         self.scenes[scene_id] = scene
-    
+
     def validate_scenes(f):
         """It won't allow any instruction that interact with scenes
         directly if there's no scene in the scene manager or an
