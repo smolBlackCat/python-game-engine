@@ -67,7 +67,7 @@ class SceneManager:
     def __init__(self):
         """Initialises SceneManager instance."""
 
-        self.views: dict[str, Scene] = {}
+        self.scenes: dict[str, Scene] = {}
         self.on_transition = False
         self.fx_object: transition.Transition = None
         self.current_scene: Scene = None
@@ -84,23 +84,38 @@ class SceneManager:
         """
 
         scene.scene_manager = self
-        self.views[scene_id] = scene
+        self.scenes[scene_id] = scene
+    
+    def validate_scenes(f):
+        """It won't allow any instruction that interact with scenes
+        directly if there's no scene in the scene manager or an
+        initial_scene was not set.
+        """
 
+        def wrapper(self, *args, **kwargs):
+            if self.current_scene is not None or self.scenes:
+                f(self, *args, **kwargs)
+
+        return wrapper
+
+    @validate_scenes
     def show(self) -> None:
         """Shows the current view, handling possible transition
         requests automatically.
         """
 
-        self.views[self.current_scene].draw()
+        self.scenes[self.current_scene].draw()
         if self.on_transition:
             self.fx_object.animate()
 
+    @validate_scenes
     def update(self) -> None:
         """Updates the current scene components."""
 
         if not self.on_transition:
-            self.views[self.current_scene].update()
+            self.scenes[self.current_scene].update()
 
+    @validate_scenes
     def update_on_event(self, event: pg_event.Event) -> None:
         """Updates scenes based on events being read by the for loop.
 
@@ -111,7 +126,7 @@ class SceneManager:
         """
 
         if not self.on_transition:
-            self.views[self.current_scene].update_on_event(event)
+            self.scenes[self.current_scene].update_on_event(event)
 
     def _change_scene(self, scene_id: str) -> None:
         """It changes the current scene directly.
