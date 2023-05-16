@@ -8,7 +8,7 @@ import pygame
 
 from . import scene, utils
 
-
+# TODO: The concept of 'Game' as a class.
 def main() -> None:
     """Main Program."""
 

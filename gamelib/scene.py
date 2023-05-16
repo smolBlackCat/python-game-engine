@@ -1,9 +1,6 @@
 import pygame
 
-from game_menu import interface
-
-from . import effects
-from . import utils
+from . import effects, interface, utils
 
 
 class Scene:
