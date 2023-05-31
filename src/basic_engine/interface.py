@@ -97,7 +97,7 @@ class Label(sprite.Sprite):
             "size": 14,
             "colour": (255, 255, 255),
             "chars_per_line": 40,
-            "ypadding": "2",
+            "ypadding": 2,
             "bold": False,
             "italic": False,
             "antialised": True}
