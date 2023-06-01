@@ -1,7 +1,7 @@
 from pygame import constants
 from .. import game, scene, interface
 
-from random import randint
+from random import randint, choice
 
 
 class DebugScene(scene.Scene):
@@ -10,7 +10,8 @@ class DebugScene(scene.Scene):
     def __init__(self, screen):
         super().__init__(screen)
 
-        self.text_attrs = {"colour": (170, 170, 170), "size": 36}
+        self.text_attrs = {"colour": (170, 170, 170), "size": 36,
+                           "chars_per_line": 20}
         self.scene_label = interface.Label(self.screen,
                                            "This is merely a test text.",
                                            **self.text_attrs)
@@ -28,6 +29,16 @@ class DebugScene(scene.Scene):
 
                 self.scene_label.update_text("This is merely a test text",
                                              **self.text_attrs)
+            elif event.key == constants.K_u:
+                messages = ["Programming is cool", "C++ is a lot faster",
+                            "Java is for schizos",
+                            "There's no need for you to say you're sorry, "
+                            "goodbye I'm going home."]
+                self.scene_label.update_text(choice(messages),
+                                             **self.text_attrs)
+                self.scene_label.rect.centerx = self.screen_rect.centerx
+                self.scene_label.rect.centery = self.screen_rect.centery
+
 
 
 def main():
