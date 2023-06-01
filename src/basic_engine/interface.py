@@ -93,14 +93,14 @@ class Label(sprite.Sprite):
         super().__init__()
 
         self.screen = screen
-        self.text_attrs = text_attrs | {
+        self.text_attrs = {
             "size": 14,
             "colour": (255, 255, 255),
             "chars_per_line": 40,
             "ypadding": 2,
             "bold": False,
             "italic": False,
-            "antialised": True}
+            "antialised": True} | text_attrs
         self.image = self.__create_image(text, self.text_attrs)
         self.rect = self.image.get_rect()
 
@@ -109,7 +109,7 @@ class Label(sprite.Sprite):
 
         self.screen.blit(self.image, self.rect)
 
-    def update_text(self, new_text):
+    def update_text(self, new_text, **text_attrs):
         """It updates the text, therefore updating the surface.
 
         Important to mention that the new surface, will use the
@@ -119,10 +119,13 @@ class Label(sprite.Sprite):
 
             new_text:
                 The new text rendered in the image attribute.
+            
+            text_attrs:
+                The attributes to be update as well.
         """
+        text_attrs = self.text_attrs | text_attrs
 
-        self.image = self.__create_image(new_text, self.text_attrs)
-        self.rect = self.image.get_rect()
+        self.image = self.__create_image(new_text, text_attrs)
 
     def __create_image(self, text, text_attrs):
         """Generates a Surface object that contains a wrapped text.
@@ -178,10 +181,8 @@ class Label(sprite.Sprite):
             for phrase in textwrap.wrap(text, text_attrs["chars_per_line"])
         ]
 
-        height = sum(
-            (phrase.get_height() + text_attrs["ypadding"]
-             for phrase in rendered_paragraph)
-        )
+        height = sum((phrase.get_height() + text_attrs["ypadding"]
+                      for phrase in rendered_paragraph))
         width = max((phrase.get_width() for phrase in rendered_paragraph))
         text_bg = surface.Surface((width, height), constants.SRCALPHA)
 
