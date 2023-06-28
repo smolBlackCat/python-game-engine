@@ -4,7 +4,7 @@ game interface.
 
 import textwrap
 
-from pygame import constants, font, mouse, sprite, surface
+from pygame import constants, draw, font, mouse, sprite, surface
 
 
 class Button(sprite.Sprite):
@@ -31,7 +31,11 @@ class Button(sprite.Sprite):
         super().__init__()
 
         self.screen = screen
-        self.button_on_image, self.button_off_image, self.button_clicked_image = button_images
+        (
+            self.button_on_image,
+            self.button_off_image,
+            self.button_clicked_image,
+        ) = button_images
         self.current_sprite = self.button_off_image
         self.rect = self.current_sprite.get_rect()
         self.action = action
@@ -100,7 +104,8 @@ class Label(sprite.Sprite):
             "ypadding": 2,
             "bold": False,
             "italic": False,
-            "antialised": True} | text_attrs
+            "antialised": True,
+        } | text_attrs
         self.image = self.__create_image(text, self.text_attrs)
         self.rect = self.image.get_rect()
 
@@ -119,7 +124,7 @@ class Label(sprite.Sprite):
 
             new_text:
                 The new text rendered in the image attribute.
-            
+
             text_attrs:
                 The attributes to be update as well.
         """
@@ -174,15 +179,19 @@ class Label(sprite.Sprite):
         """
 
         text_font = font.SysFont(
-            None, text_attrs["size"], text_attrs["bold"], text_attrs["italic"])
+            None, text_attrs["size"], text_attrs["bold"], text_attrs["italic"]
+        )
         rendered_paragraph = [
-            text_font.render(phrase, text_attrs["antialised"],
-                             text_attrs["colour"])
+            text_font.render(phrase, text_attrs["antialised"], text_attrs["colour"])
             for phrase in textwrap.wrap(text, text_attrs["chars_per_line"])
         ]
 
-        height = sum((phrase.get_height() + text_attrs["ypadding"]
-                      for phrase in rendered_paragraph))
+        height = sum(
+            (
+                phrase.get_height() + text_attrs["ypadding"]
+                for phrase in rendered_paragraph
+            )
+        )
         width = max((phrase.get_width() for phrase in rendered_paragraph))
         text_bg = surface.Surface((width, height), constants.SRCALPHA)
 
@@ -194,3 +203,151 @@ class Label(sprite.Sprite):
             row += text_font.get_height() + text_attrs["ypadding"]
 
         return text_bg
+
+
+class ButtonBar(sprite.Sprite):
+    """Class that represents a right slidable bar of buttons located to the
+    right of the screen.
+
+    This implementation is not totally complete. A commom button bar would include:
+        * A slider (in case there are more button than vertical space in the bar)
+        * A cell system, separating each available node.
+    """
+
+    BUTTON_BORDER_PADDING = 4
+    BUTTON_BORDER_SPACING = 10
+    BUTTON_EXTRA_SPACE = 4
+
+    BAR_COLOUR = (1, 38, 31)
+
+    def __init__(self, screen, label: str, *options):
+        """Initialises the ButtonBar object.
+
+        Args:
+            label: a string title for the button bar title.
+
+            options: a list of tuples containing the option name and
+                     the function.
+        """
+
+        self.screen = screen
+        self.active = True
+        self.label = Label(screen, label, size=36, antialised=True)
+        self.buttons = self._create_buttons(screen, options)
+
+        self.bar_image = self._create_bar_sprite(self.label, self.buttons)
+        self.bar_rect = self.bar_image.get_rect()
+        self._setup_bar()
+
+    def draw(self):
+        self.screen.blit(self.bar_image, self.bar_rect)
+        self.label.draw()
+        for button in self.buttons:
+            button.draw()
+
+    def update(self):
+        self._setup_bar()
+        if self.active:
+            for button in self.buttons:
+                button.update()
+
+    def update_on_event(self, event):
+        for button in self.buttons:
+            button.update_on_event(event)
+
+    # TODO: Should the colours be fixed?
+    @classmethod
+    def _create_buttons(cls, screen, options) -> list[Button]:
+        """Sets up a list of buttons to be included in the button
+        bar.
+
+        Args:
+            options: list of tuples storing a name and a function.
+        """
+
+        output = []
+        for option in options:
+            outline, inline, inline_on, outline_clicked = ((60, 165, 157),
+            (231, 156, 42),
+            (90, 61, 85),
+            (162, 222, 150))
+            button_images = [
+                cls._create_button_sprite(option[0], inline_on, outline),
+                cls._create_button_sprite(option[0], inline, outline),
+                cls._create_button_sprite(option[0], inline_on, outline_clicked),
+            ]
+            output.append(Button(screen, button_images, option[1]))
+        return output
+
+    @classmethod
+    def _create_button_sprite(cls, text, inline_c, outline_c):
+        """Creates the button image from a Label object."""
+
+        text_image = Label(None, text, size=24).image
+        text_rect = text_image.get_rect()
+
+        dimension_inline_h = text_image.get_height() + (2*cls.BUTTON_BORDER_PADDING)
+        dimension_inline_w = text_image.get_width() + (2*cls.BUTTON_BORDER_PADDING)
+        in_bt_surface = surface.Surface((dimension_inline_w,
+                                        dimension_inline_h))
+        in_bt_surface_rect = in_bt_surface.get_rect()
+
+        text_rect.center = in_bt_surface_rect.center
+
+        in_bt_surface.fill(inline_c)
+        in_bt_surface.blit(text_image, text_rect)
+
+        dimension_outline_h = dimension_inline_h + (2*cls.BUTTON_EXTRA_SPACE)
+        dimension_outline_w = dimension_inline_w + (2*cls.BUTTON_EXTRA_SPACE)
+
+        out_bt_surface = surface.Surface((dimension_outline_w, dimension_outline_h))
+        out_bt_surface_rect = out_bt_surface.get_rect()
+
+        in_bt_surface_rect.center = out_bt_surface_rect.center
+
+        out_bt_surface.fill(outline_c)
+        out_bt_surface.blit(in_bt_surface, in_bt_surface_rect)
+
+        return out_bt_surface
+
+    @classmethod
+    def _create_bar_sprite(cls, title, buttons) -> surface.Surface:
+        """Sets up a bar sprite with the given buttons attached.
+        
+        Args:
+            title: Label object
+            
+            buttons: list of Button objects to be attached to the bar
+        """
+
+        w_widest = max(buttons+[title],
+                          key=lambda button: button.rect.width).rect.width
+        
+        bar_width = w_widest + 2 * cls.BUTTON_BORDER_PADDING
+        bar_height = cls._bar_height(buttons+[title])
+
+        bar_sprite = surface.Surface((bar_width, bar_height))
+        bar_sprite.fill(cls.BAR_COLOUR)
+        draw.rect(bar_sprite, (35, 176, 158), bar_sprite.get_rect(), 4)
+
+        return bar_sprite
+
+    def _setup_bar(self):
+        # Position the title
+        self.label.rect.x = self.bar_rect.x
+        self.label.rect.centerx = self.bar_rect.centerx
+        self.label.rect.y = self.bar_rect.y + self.BUTTON_BORDER_PADDING
+
+        # Position the buttons
+        y = self.BUTTON_BORDER_SPACING + self.label.rect.bottom
+        for button in self.buttons:
+            button.rect.centerx = self.bar_rect.centerx
+            button.rect.y = y
+            y = self.BUTTON_BORDER_SPACING + button.rect.bottom
+
+    @classmethod
+    def _bar_height(cls, widgets):
+        all_w_height = sum(list(map(lambda button: button.rect.height, widgets))) \
+            + 2 * cls.BUTTON_BORDER_PADDING
+
+        return 2 * all_w_height + 2 * cls.BUTTON_BORDER_PADDING
