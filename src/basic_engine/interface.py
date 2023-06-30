@@ -216,6 +216,7 @@ class ButtonBar(sprite.Sprite):
 
     PADDING = 4
     SPACING = 10
+    ANIMATION_SPEED = 20
 
     BAR_COLOUR = (1, 38, 31)
 
@@ -266,7 +267,6 @@ class ButtonBar(sprite.Sprite):
 
         self.active_button = Button(screen, active_button_images, button_bar_action)
 
-        self.speed = 4
         self.bar_rect.centery = self.screen_rect.centery
         if position == "right":
             self.bar_rect.left = self.screen_rect.right
@@ -304,27 +304,35 @@ class ButtonBar(sprite.Sprite):
         if self.active:
             # We slide it out of the screen
             if self.position == "right":
-                if self.bar_rect.left >= self.screen_rect.right:
+                if self.bar_rect.x + self.ANIMATION_SPEED >= self.screen_rect.right:
+                    self.bar_rect.left = self.screen_rect.right
                     self.on_animation = False
                     self.active = False
-                self.bar_rect.x += self.speed
+                else:
+                    self.bar_rect.x += self.ANIMATION_SPEED
             elif self.position == "left":
-                if self.bar_rect.right <= self.screen_rect.left:
+                if self.bar_rect.right - self.ANIMATION_SPEED <= self.screen_rect.left:
+                    self.bar_rect.right = self.screen_rect.left
                     self.on_animation = False
                     self.active = False
-                self.bar_rect.x -= self.speed
+                else:
+                    self.bar_rect.right -= self.ANIMATION_SPEED
         else:
             # We make the button bar visible
             if self.position == "right":
-                if self.bar_rect.right <= self.screen_rect.right:
+                if self.bar_rect.right - self.ANIMATION_SPEED <= self.screen_rect.right:
+                    self.bar_rect.right = self.screen_rect.right
                     self.on_animation = False
                     self.active = True
-                self.bar_rect.x -= self.speed
+                else:
+                    self.bar_rect.right -= self.ANIMATION_SPEED
             elif self.position == "left":
-                if self.bar_rect.left >= self.screen_rect.left:
+                if self.bar_rect.x + self.ANIMATION_SPEED >= self.screen_rect.left:
+                    self.bar_rect.left = self.screen_rect.left
                     self.on_animation = False
                     self.active = True
-                self.bar_rect.x += self.speed
+                else:
+                    self.bar_rect.x += self.ANIMATION_SPEED
 
     # TODO: Should the colours be fixed?
     @classmethod
