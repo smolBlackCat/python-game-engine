@@ -214,7 +214,6 @@ class ButtonBar(sprite.Sprite):
         * A cell system, separating each available node.
     """
 
-    # FIXME: Find better names. Those are prone for misunderstanding
     PADDING = 4
     SPACING = 10
 
