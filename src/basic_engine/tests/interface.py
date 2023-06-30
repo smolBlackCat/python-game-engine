@@ -20,15 +20,13 @@ class DebugScene(scene.Scene):
         )
 
         actions = [
-            ("A* algorithm        ", lambda: print("fatal1")),
+            ("A* algorithm", lambda: print("fatal1")),
             ("Djikstra", lambda: print("fatal2")),
             ("Breadth-First Search", lambda: print("fatal3")),
             ("Depth-First Search", lambda: print("fatal4")),
         ]
         self.button_bar = interface.ButtonBar(screen, "This is a Button Bar",
-                                              *actions)
-
-        self.button_bar.bar_rect.centery = self.screen_rect.centery
+                                              "left", *actions)
         self.scene_label.rect.center = self.screen_rect.center
 
     def draw(self) -> None:
@@ -68,7 +66,7 @@ class ButtonBarTestCase(unittest.TestCase):
     def test_setup_buttons(self):
         options = [("string", str), ("integer", int), ("float", float)]
 
-        output = interface.ButtonBar._create_buttons(None, options)
+        output = interface.ButtonBar._create_text_buttons(None, options)
 
         self.assertEqual(len(output), 3)
 
@@ -78,7 +76,7 @@ class ButtonBarTestCase(unittest.TestCase):
             self.assertEqual(option[1], button.action)
 
     def test_create_button(self):
-        output = interface.ButtonBar._create_button_sprite(
+        output = interface.ButtonBar._create_text_button_sprite(
             "test", (150, 0, 0), (255, 165, 0)
         )
 
@@ -87,14 +85,14 @@ class ButtonBarTestCase(unittest.TestCase):
         self.assertEqual(
             output.get_height(),
             label_image.get_rect().height
-            + (2 * interface.ButtonBar.BUTTON_BORDER_PADDING)
-            + (2 * interface.ButtonBar.BUTTON_EXTRA_SPACE),
+            + (2 * interface.ButtonBar.PADDING)
+            + (2 * interface.ButtonBar.PADDING),
         )
         self.assertEqual(
             output.get_width(),
             label_image.get_rect().width
-            + (2 * interface.ButtonBar.BUTTON_BORDER_PADDING)
-            + (2 * interface.ButtonBar.BUTTON_EXTRA_SPACE),
+            + (2 * interface.ButtonBar.PADDING)
+            + (2 * interface.ButtonBar.PADDING),
         )
 
 

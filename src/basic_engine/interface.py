@@ -214,13 +214,14 @@ class ButtonBar(sprite.Sprite):
         * A cell system, separating each available node.
     """
 
-    BUTTON_BORDER_PADDING = 4
-    BUTTON_BORDER_SPACING = 10
-    BUTTON_EXTRA_SPACE = 4
+    # FIXME: Find better names. Those are prone for misunderstanding
+    PADDING = 4
+    SPACING = 10
 
     BAR_COLOUR = (1, 38, 31)
 
-    def __init__(self, screen, label: str, *options):
+    # TODO: Setup slidable setting
+    def __init__(self, screen, label: str, position, *options):
         """Initialises the ButtonBar object.
 
         Args:
@@ -228,36 +229,107 @@ class ButtonBar(sprite.Sprite):
 
             options: a list of tuples containing the option name and
                      the function.
+
+            position: Either "left" or "right"
         """
 
         self.screen = screen
-        self.active = True
+        self.screen_rect = screen.get_rect()
+        self.active = False
+        self.on_animation = False
+        self.position = position
         self.label = Label(screen, label, size=36, antialised=True)
-        self.buttons = self._create_buttons(screen, options)
+        self.buttons = self._create_text_buttons(screen, options)
 
         self.bar_image = self._create_bar_sprite(self.label, self.buttons)
         self.bar_rect = self.bar_image.get_rect()
-        self._setup_bar()
+
+        active_button_images = [
+            self._create_button_sprite(
+                (85, 110, 83),
+                (21, 42, 56),
+                (self.bar_rect.height - 32, 10),
+            ),
+            self._create_button_sprite(
+                (41, 67, 92),
+                (21, 42, 56),
+                (self.bar_rect.height - 32, 10),
+            ),
+            self._create_button_sprite(
+                (85, 110, 83),
+                (209, 212, 201),
+                (self.bar_rect.height - 32, 10),
+            ),
+        ]
+
+        def button_bar_action():
+            self.on_animation = True
+
+        self.active_button = Button(screen, active_button_images, button_bar_action)
+
+        self.speed = 4
+        self.bar_rect.centery = self.screen_rect.centery
+        if position == "right":
+            self.bar_rect.left = self.screen_rect.right
+        elif position == "left":
+            self.bar_rect.right = self.screen_rect.left
+        else:
+            raise ValueError(f"{position} is not one of \"left\" or \"right\"")
+
+        self._update()
 
     def draw(self):
         self.screen.blit(self.bar_image, self.bar_rect)
-        self.label.draw()
-        for button in self.buttons:
-            button.draw()
+        self.active_button.draw()
+        if self.active:
+            self.label.draw()
+            for button in self.buttons:
+                button.draw()
 
     def update(self):
-        self._setup_bar()
-        if self.active:
-            for button in self.buttons:
-                button.update()
+        self.active_button.update()
+        if self.on_animation:
+            self._slide()
+            self._update()
+        else:
+            if self.active:
+                for button in self.buttons:
+                    button.update()
 
     def update_on_event(self, event):
         for button in self.buttons:
             button.update_on_event(event)
+        self.active_button.update_on_event(event)
+    
+    def _slide(self):
+        if self.active:
+            # We slide it out of the screen
+            if self.position == "right":
+                if self.bar_rect.left >= self.screen_rect.right:
+                    self.on_animation = False
+                    self.active = False
+                self.bar_rect.x += self.speed
+            elif self.position == "left":
+                if self.bar_rect.right <= self.screen_rect.left:
+                    self.on_animation = False
+                    self.active = False
+                self.bar_rect.x -= self.speed
+        else:
+            # We make the button bar visible
+            if self.position == "right":
+                if self.bar_rect.right <= self.screen_rect.right:
+                    self.on_animation = False
+                    self.active = True
+                self.bar_rect.x -= self.speed
+            elif self.position == "left":
+                if self.bar_rect.left >= self.screen_rect.left:
+                    self.on_animation = False
+                    self.active = True
+                self.bar_rect.x += self.speed
 
     # TODO: Should the colours be fixed?
     @classmethod
-    def _create_buttons(cls, screen, options) -> list[Button]:
+    def _create_text_buttons(cls, screen, options) -> list[Button]:
         """Sets up a list of buttons to be included in the button
         bar.
 
@@ -267,38 +339,33 @@ class ButtonBar(sprite.Sprite):
 
         output = []
         for option in options:
-            outline, inline, inline_on, outline_clicked = ((60, 165, 157),
-            (231, 156, 42),
-            (90, 61, 85),
-            (162, 222, 150))
+            outline, inline, inline_on, outline_clicked = (
+                (60, 165, 157),
+                (231, 156, 42),
+                (90, 61, 85),
+                (162, 222, 150),
+            )
             button_images = [
-                cls._create_button_sprite(option[0], inline_on, outline),
-                cls._create_button_sprite(option[0], inline, outline),
-                cls._create_button_sprite(option[0], inline_on, outline_clicked),
+                cls._create_text_button_sprite(option[0], inline_on, outline),
+                cls._create_text_button_sprite(option[0], inline, outline),
+                cls._create_text_button_sprite(option[0], inline_on, outline_clicked),
             ]
             output.append(Button(screen, button_images, option[1]))
         return output
 
     @classmethod
-    def _create_button_sprite(cls, text, inline_c, outline_c):
-        """Creates the button image from a Label object."""
+    def _create_button_sprite(cls, inline_c, outline_c, base_dimensions):
+        """Creates a plain button sprite"""
 
-        text_image = Label(None, text, size=24).image
-        text_rect = text_image.get_rect()
-
-        dimension_inline_h = text_image.get_height() + (2*cls.BUTTON_BORDER_PADDING)
-        dimension_inline_w = text_image.get_width() + (2*cls.BUTTON_BORDER_PADDING)
-        in_bt_surface = surface.Surface((dimension_inline_w,
-                                        dimension_inline_h))
+        dimension_inline_h = base_dimensions[0] + (2 * cls.PADDING)
+        dimension_inline_w = base_dimensions[1] + (2 * cls.PADDING)
+        in_bt_surface = surface.Surface((dimension_inline_w, dimension_inline_h))
         in_bt_surface_rect = in_bt_surface.get_rect()
 
-        text_rect.center = in_bt_surface_rect.center
-
         in_bt_surface.fill(inline_c)
-        in_bt_surface.blit(text_image, text_rect)
 
-        dimension_outline_h = dimension_inline_h + (2*cls.BUTTON_EXTRA_SPACE)
-        dimension_outline_w = dimension_inline_w + (2*cls.BUTTON_EXTRA_SPACE)
+        dimension_outline_h = dimension_inline_h + (2 * cls.PADDING)
+        dimension_outline_w = dimension_inline_w + (2 * cls.PADDING)
 
         out_bt_surface = surface.Surface((dimension_outline_w, dimension_outline_h))
         out_bt_surface_rect = out_bt_surface.get_rect()
@@ -311,20 +378,40 @@ class ButtonBar(sprite.Sprite):
         return out_bt_surface
 
     @classmethod
+    def _create_text_button_sprite(cls, text, inline_c, outline_c):
+        """Creates the button image from a Label object."""
+
+        text_image = Label(None, text, size=24).image
+        text_rect = text_image.get_rect()
+
+        button_sprite = cls._create_button_sprite(
+            inline_c, outline_c, (text_rect.height, text_rect.width)
+        )
+
+        button_sprite_rect = button_sprite.get_rect()
+        text_rect.center = button_sprite_rect.center
+        button_sprite.blit(
+            text_image, text_rect
+        )
+
+        return button_sprite
+
+    @classmethod
     def _create_bar_sprite(cls, title, buttons) -> surface.Surface:
         """Sets up a bar sprite with the given buttons attached.
-        
+
         Args:
             title: Label object
-            
+
             buttons: list of Button objects to be attached to the bar
         """
 
-        w_widest = max(buttons+[title],
-                          key=lambda button: button.rect.width).rect.width
-        
-        bar_width = w_widest + 2 * cls.BUTTON_BORDER_PADDING
-        bar_height = cls._bar_height(buttons+[title])
+        w_widest = max(
+            buttons + [title], key=lambda button: button.rect.width
+        ).rect.width
+
+        bar_width = w_widest + 2 * cls.PADDING
+        bar_height = cls._bar_height(buttons + [title])
 
         bar_sprite = surface.Surface((bar_width, bar_height))
         bar_sprite.fill(cls.BAR_COLOUR)
@@ -332,22 +419,34 @@ class ButtonBar(sprite.Sprite):
 
         return bar_sprite
 
-    def _setup_bar(self):
+    def _update(self):
         # Position the title
         self.label.rect.x = self.bar_rect.x
         self.label.rect.centerx = self.bar_rect.centerx
-        self.label.rect.y = self.bar_rect.y + self.BUTTON_BORDER_PADDING
+        self.label.rect.y = self.bar_rect.y + self.PADDING
+
+        # Position the pull button
+        if self.position == "left":
+            self.active_button.rect.center = self.bar_rect.center
+            self.active_button.rect.left = self.bar_rect.right
+        elif self.position == "right":
+            self.active_button.rect.center = self.bar_rect.center
+            self.active_button.rect.right = self.bar_rect.left
+        else:
+            raise ValueError(f'{self.position} is not one of: "left" or "right"')
 
         # Position the buttons
-        y = self.BUTTON_BORDER_SPACING + self.label.rect.bottom
+        y = self.SPACING + self.label.rect.bottom
         for button in self.buttons:
             button.rect.centerx = self.bar_rect.centerx
             button.rect.y = y
-            y = self.BUTTON_BORDER_SPACING + button.rect.bottom
+            y = self.SPACING + button.rect.bottom
 
     @classmethod
     def _bar_height(cls, widgets):
-        all_w_height = sum(list(map(lambda button: button.rect.height, widgets))) \
-            + 2 * cls.BUTTON_BORDER_PADDING
+        all_w_height = (
+            sum(list(map(lambda button: button.rect.height, widgets)))
+            + 2 * cls.PADDING
+        )
 
-        return 2 * all_w_height + 2 * cls.BUTTON_BORDER_PADDING
+        return 2 * all_w_height + 2 * cls.PADDING
