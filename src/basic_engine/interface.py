@@ -220,7 +220,7 @@ class ButtonBar(sprite.Sprite):
     BAR_COLOUR = (1, 38, 31)
     BUTTON_SPRITE_RADIUS = 4
 
-    def __init__(self, screen, label: str, position, *options, **kwargs):
+    def __init__(self, screen, label: str, position, *options, **colour_args):
         """Initialises the ButtonBar object.
 
         Args:
@@ -230,6 +230,21 @@ class ButtonBar(sprite.Sprite):
                      the function.
 
             position: Either "left" or "right"
+
+            colour_args:
+                a dictionary of colour arguments for each component in the
+                ButtonBar. The key is str and the colour code is a
+                tuple[R, G, B].
+
+                Available keys:
+
+                    * outline
+                    * inline
+                    * inline_on
+                    * outline_clicked
+                    * bar_surface_colour
+                    * bar_outline_colour
+
         """
 
         self.screen = screen
@@ -239,15 +254,15 @@ class ButtonBar(sprite.Sprite):
         self.position = position
         self.label = Label(screen, label, size=36, antialised=True)
         self.buttons = self._create_text_buttons(
-            screen, options, kwargs.get("outline") or (60, 165, 157),
-            kwargs.get("inline") or (231, 156, 42),
-            kwargs.get("inline_on") or (90, 61, 85),
-            kwargs.get("outline_clicked") or (162, 222, 150))
+            screen, options, colour_args.get("outline") or (60, 165, 157),
+            colour_args.get("inline") or (231, 156, 42),
+            colour_args.get("inline_on") or (90, 61, 85),
+            colour_args.get("outline_clicked") or (162, 222, 150))
 
         self.bar_image = self._create_bar_sprite(
             self.label, self.buttons,
-            kwargs.get("bar_surface_colour") or (0, 0, 0),
-            kwargs.get("bar_outline_colour") or (78, 79, 235))
+            colour_args.get("bar_surface_colour") or (0, 0, 0),
+            colour_args.get("bar_outline_colour") or (78, 79, 235))
         self.bar_rect = self.bar_image.get_rect()
 
         active_button_images = [
@@ -347,8 +362,19 @@ class ButtonBar(sprite.Sprite):
         bar.
 
         Args:
-            options: list of tuples storing a name and a function.
+            options: list of tuples storing a name and a function
+
+            outline: tuple representing the outline RGB colour code
+
+            inline: tuple representing the inline RGB colour code
+
+            inline_on: tuple representing the inline RGB colour code
+                       used when the mouse hovers on the button
+
+            outline_clicked: tuple representing the outline RGB colour
+                             code used when the button is clicked
         """
+
         labels = [Label(screen, option[0], size=24) for option in options]
 
         lg_label_w = max(labels, key=lambda label: label.image.get_width())
@@ -358,12 +384,6 @@ class ButtonBar(sprite.Sprite):
 
         output = []
         for option in options:
-            outline, inline, inline_on, outline_clicked = (
-                (60, 165, 157),
-                (231, 156, 42),
-                (90, 61, 85),
-                (162, 222, 150),
-            )
             button_images = [
                 cls._create_text_button_sprite(option[0], inline_on, outline, (maximum_height, maximum_width)),
                 cls._create_text_button_sprite(option[0], inline, outline, (maximum_height, maximum_width)),
@@ -420,6 +440,12 @@ class ButtonBar(sprite.Sprite):
             title: Label object
 
             buttons: list of Button objects to be attached to the bar
+
+            bar_surface_colour: RGB colour code of the bar's surface
+                                represented by a tuple
+            
+            bar_outline_colour: RGB colour code of the bar's outline
+                                represented by a tuple
         """
 
         w_widest = max(
