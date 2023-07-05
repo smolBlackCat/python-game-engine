@@ -254,15 +254,20 @@ class ButtonBar(sprite.Sprite):
         self.position = position
         self.label = Label(screen, label, size=36, antialised=True)
         self.buttons = self._create_text_buttons(
-            screen, options, colour_args.get("outline") or (60, 165, 157),
+            screen,
+            options,
+            colour_args.get("outline") or (60, 165, 157),
             colour_args.get("inline") or (231, 156, 42),
             colour_args.get("inline_on") or (90, 61, 85),
-            colour_args.get("outline_clicked") or (162, 222, 150))
+            colour_args.get("outline_clicked") or (162, 222, 150),
+        )
 
         self.bar_image = self._create_bar_sprite(
-            self.label, self.buttons,
+            self.label,
+            self.buttons,
             colour_args.get("bar_surface_colour") or (0, 0, 0),
-            colour_args.get("bar_outline_colour") or (78, 79, 235))
+            colour_args.get("bar_outline_colour") or (78, 79, 235),
+        )
         self.bar_rect = self.bar_image.get_rect()
 
         active_button_images = [
@@ -294,7 +299,7 @@ class ButtonBar(sprite.Sprite):
         elif position == "left":
             self.bar_rect.right = self.screen_rect.left
         else:
-            raise ValueError(f"{position} is not one of \"left\" or \"right\"")
+            raise ValueError(f'{position} is not one of "left" or "right"')
 
         self._update()
 
@@ -320,7 +325,7 @@ class ButtonBar(sprite.Sprite):
         for button in self.buttons:
             button.update_on_event(event)
         self.active_button.update_on_event(event)
-    
+
     def _slide(self):
         if self.active:
             # We slide it out of the screen
@@ -356,8 +361,9 @@ class ButtonBar(sprite.Sprite):
                     self.bar_rect.x += self.ANIMATION_SPEED
 
     @classmethod
-    def _create_text_buttons(cls, screen, options, outline, inline, inline_on,
-                             outline_clicked) -> list[Button]:
+    def _create_text_buttons(
+        cls, screen, options, outline, inline, inline_on, outline_clicked
+    ) -> list[Button]:
         """Sets up a list of buttons to be included in the button
         bar.
 
@@ -385,9 +391,18 @@ class ButtonBar(sprite.Sprite):
         output = []
         for option in options:
             button_images = [
-                cls._create_text_button_sprite(option[0], inline_on, outline, (maximum_height, maximum_width)),
-                cls._create_text_button_sprite(option[0], inline, outline, (maximum_height, maximum_width)),
-                cls._create_text_button_sprite(option[0], inline_on, outline_clicked, (maximum_height, maximum_width)),
+                cls._create_text_button_sprite(
+                    option[0], inline_on, outline, (maximum_height, maximum_width)
+                ),
+                cls._create_text_button_sprite(
+                    option[0], inline, outline, (maximum_height, maximum_width)
+                ),
+                cls._create_text_button_sprite(
+                    option[0],
+                    inline_on,
+                    outline_clicked,
+                    (maximum_height, maximum_width),
+                ),
             ]
             output.append(Button(screen, button_images, option[1]))
         return output
@@ -403,37 +418,51 @@ class ButtonBar(sprite.Sprite):
 
         root_surface = surface.Surface((dimension_outline_w, dimension_outline_h))
 
-        draw.rect(root_surface, inline_c, root_surface.get_rect(),
-                  border_radius=cls.BUTTON_SPRITE_RADIUS)
-        draw.rect(root_surface, outline_c, root_surface.get_rect(), cls.PADDING,
-                  border_radius=cls.BUTTON_SPRITE_RADIUS)
+        draw.rect(
+            root_surface,
+            inline_c,
+            root_surface.get_rect(),
+            border_radius=cls.BUTTON_SPRITE_RADIUS,
+        )
+        draw.rect(
+            root_surface,
+            outline_c,
+            root_surface.get_rect(),
+            cls.PADDING,
+            border_radius=cls.BUTTON_SPRITE_RADIUS,
+        )
 
         return root_surface
 
     @classmethod
-    def _create_text_button_sprite(cls, text, inline_c, outline_c, base_dimensions=None):
+    def _create_text_button_sprite(
+        cls, text, inline_c, outline_c, base_dimensions=None
+    ):
         """Creates the button image from a Label object."""
 
         text_image = Label(None, text, size=24).image
         text_rect = text_image.get_rect()
 
         button_sprite = cls._create_button_sprite(
-            inline_c, outline_c,
-            ((text_rect.height, text_rect.width)
-             if base_dimensions is None else base_dimensions)
+            inline_c,
+            outline_c,
+            (
+                (text_rect.height, text_rect.width)
+                if base_dimensions is None
+                else base_dimensions
+            ),
         )
 
         button_sprite_rect = button_sprite.get_rect()
         text_rect.center = button_sprite_rect.center
-        button_sprite.blit(
-            text_image, text_rect
-        )
+        button_sprite.blit(text_image, text_rect)
 
         return button_sprite
 
     @classmethod
-    def _create_bar_sprite(cls, title, buttons, bar_surface_colour,
-                           bar_outline_colour) -> surface.Surface:
+    def _create_bar_sprite(
+        cls, title, buttons, bar_surface_colour, bar_outline_colour
+    ) -> surface.Surface:
         """Sets up a bar sprite with the given buttons attached.
 
         Args:
@@ -443,7 +472,7 @@ class ButtonBar(sprite.Sprite):
 
             bar_surface_colour: RGB colour code of the bar's surface
                                 represented by a tuple
-            
+
             bar_outline_colour: RGB colour code of the bar's outline
                                 represented by a tuple
         """
@@ -487,8 +516,7 @@ class ButtonBar(sprite.Sprite):
     @classmethod
     def _bar_height(cls, widgets):
         all_w_height = (
-            sum(list(map(lambda button: button.rect.height, widgets)))
-            + 2 * cls.PADDING
+            sum(list(map(lambda button: button.rect.height, widgets))) + 2 * cls.PADDING
         )
 
         return 2 * all_w_height + 2 * cls.PADDING
