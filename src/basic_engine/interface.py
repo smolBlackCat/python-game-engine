@@ -217,8 +217,8 @@ class ButtonBar(sprite.Sprite):
     PADDING = 4
     SPACING = 10
     ANIMATION_SPEED = 20
-
     BAR_COLOUR = (1, 38, 31)
+    BUTTON_SPRITE_RADIUS = 4
 
     # TODO: Setup slidable setting
     def __init__(self, screen, label: str, position, *options):
@@ -343,6 +343,12 @@ class ButtonBar(sprite.Sprite):
         Args:
             options: list of tuples storing a name and a function.
         """
+        labels = [Label(screen, option[0], size=24) for option in options]
+
+        lg_label_w = max(labels, key=lambda label: label.image.get_width())
+        lg_label_h = max(labels, key=lambda label: label.image.get_height())
+        maximum_width = lg_label_w.image.get_width()
+        maximum_height = lg_label_h.image.get_height()
 
         output = []
         for option in options:
@@ -353,9 +359,9 @@ class ButtonBar(sprite.Sprite):
                 (162, 222, 150),
             )
             button_images = [
-                cls._create_text_button_sprite(option[0], inline_on, outline),
-                cls._create_text_button_sprite(option[0], inline, outline),
-                cls._create_text_button_sprite(option[0], inline_on, outline_clicked),
+                cls._create_text_button_sprite(option[0], inline_on, outline, (maximum_height, maximum_width)),
+                cls._create_text_button_sprite(option[0], inline, outline, (maximum_height, maximum_width)),
+                cls._create_text_button_sprite(option[0], inline_on, outline_clicked, (maximum_height, maximum_width)),
             ]
             output.append(Button(screen, button_images, option[1]))
         return output
@@ -366,33 +372,29 @@ class ButtonBar(sprite.Sprite):
 
         dimension_inline_h = base_dimensions[0] + (2 * cls.PADDING)
         dimension_inline_w = base_dimensions[1] + (2 * cls.PADDING)
-        in_bt_surface = surface.Surface((dimension_inline_w, dimension_inline_h))
-        in_bt_surface_rect = in_bt_surface.get_rect()
-
-        in_bt_surface.fill(inline_c)
-
         dimension_outline_h = dimension_inline_h + (2 * cls.PADDING)
         dimension_outline_w = dimension_inline_w + (2 * cls.PADDING)
 
-        out_bt_surface = surface.Surface((dimension_outline_w, dimension_outline_h))
-        out_bt_surface_rect = out_bt_surface.get_rect()
+        root_surface = surface.Surface((dimension_outline_w, dimension_outline_h))
 
-        in_bt_surface_rect.center = out_bt_surface_rect.center
+        draw.rect(root_surface, inline_c, root_surface.get_rect(),
+                  border_radius=cls.BUTTON_SPRITE_RADIUS)
+        draw.rect(root_surface, outline_c, root_surface.get_rect(), cls.PADDING,
+                  border_radius=cls.BUTTON_SPRITE_RADIUS)
 
-        out_bt_surface.fill(outline_c)
-        out_bt_surface.blit(in_bt_surface, in_bt_surface_rect)
-
-        return out_bt_surface
+        return root_surface
 
     @classmethod
-    def _create_text_button_sprite(cls, text, inline_c, outline_c):
+    def _create_text_button_sprite(cls, text, inline_c, outline_c, base_dimensions=None):
         """Creates the button image from a Label object."""
 
         text_image = Label(None, text, size=24).image
         text_rect = text_image.get_rect()
 
         button_sprite = cls._create_button_sprite(
-            inline_c, outline_c, (text_rect.height, text_rect.width)
+            inline_c, outline_c,
+            ((text_rect.height, text_rect.width)
+             if base_dimensions is None else base_dimensions)
         )
 
         button_sprite_rect = button_sprite.get_rect()
@@ -417,7 +419,7 @@ class ButtonBar(sprite.Sprite):
             buttons + [title], key=lambda button: button.rect.width
         ).rect.width
 
-        bar_width = w_widest + 2 * cls.PADDING
+        bar_width = w_widest + 4 * cls.PADDING
         bar_height = cls._bar_height(buttons + [title])
 
         bar_sprite = surface.Surface((bar_width, bar_height))
