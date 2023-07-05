@@ -25,8 +25,16 @@ class DebugScene(scene.Scene):
             ("Breadth-First Search", lambda: print("fatal3")),
             ("Depth-First Search", lambda: print("fatal4")),
         ]
-        self.button_bar = interface.ButtonBar(screen, "This is a Button Bar",
-                                              "left", *actions)
+
+        colour_args = {
+            "outline": (60, 165, 157),
+            "inline": (231, 156, 42),
+            "inline_on": (90, 61, 85),
+            "outline_clicked": (162, 222, 150),
+            "bar_surface_colour": (6, 143, 255)
+        }
+        self.button_bar = interface.ButtonBar(screen, "OPTIONS",
+                                              "right", *actions, **colour_args)
         self.scene_label.rect.center = self.screen_rect.center
 
     def draw(self) -> None:
@@ -106,5 +114,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    #unittest.main()
     main()

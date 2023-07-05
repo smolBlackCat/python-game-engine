@@ -220,8 +220,7 @@ class ButtonBar(sprite.Sprite):
     BAR_COLOUR = (1, 38, 31)
     BUTTON_SPRITE_RADIUS = 4
 
-    # TODO: Setup slidable setting
-    def __init__(self, screen, label: str, position, *options):
+    def __init__(self, screen, label: str, position, *options, **kwargs):
         """Initialises the ButtonBar object.
 
         Args:
@@ -239,9 +238,16 @@ class ButtonBar(sprite.Sprite):
         self.on_animation = False
         self.position = position
         self.label = Label(screen, label, size=36, antialised=True)
-        self.buttons = self._create_text_buttons(screen, options)
+        self.buttons = self._create_text_buttons(
+            screen, options, kwargs.get("outline") or (60, 165, 157),
+            kwargs.get("inline") or (231, 156, 42),
+            kwargs.get("inline_on") or (90, 61, 85),
+            kwargs.get("outline_clicked") or (162, 222, 150))
 
-        self.bar_image = self._create_bar_sprite(self.label, self.buttons)
+        self.bar_image = self._create_bar_sprite(
+            self.label, self.buttons,
+            kwargs.get("bar_surface_colour") or (0, 0, 0),
+            kwargs.get("bar_outline_colour") or (78, 79, 235))
         self.bar_rect = self.bar_image.get_rect()
 
         active_button_images = [
@@ -334,9 +340,9 @@ class ButtonBar(sprite.Sprite):
                 else:
                     self.bar_rect.x += self.ANIMATION_SPEED
 
-    # TODO: Should the colours be fixed?
     @classmethod
-    def _create_text_buttons(cls, screen, options) -> list[Button]:
+    def _create_text_buttons(cls, screen, options, outline, inline, inline_on,
+                             outline_clicked) -> list[Button]:
         """Sets up a list of buttons to be included in the button
         bar.
 
@@ -406,7 +412,8 @@ class ButtonBar(sprite.Sprite):
         return button_sprite
 
     @classmethod
-    def _create_bar_sprite(cls, title, buttons) -> surface.Surface:
+    def _create_bar_sprite(cls, title, buttons, bar_surface_colour,
+                           bar_outline_colour) -> surface.Surface:
         """Sets up a bar sprite with the given buttons attached.
 
         Args:
@@ -423,8 +430,8 @@ class ButtonBar(sprite.Sprite):
         bar_height = cls._bar_height(buttons + [title])
 
         bar_sprite = surface.Surface((bar_width, bar_height))
-        bar_sprite.fill(cls.BAR_COLOUR)
-        draw.rect(bar_sprite, (35, 176, 158), bar_sprite.get_rect(), 4)
+        bar_sprite.fill(bar_surface_colour)
+        draw.rect(bar_sprite, bar_outline_colour, bar_sprite.get_rect(), 4)
 
         return bar_sprite
 
