@@ -4,7 +4,7 @@ game interface.
 
 import textwrap
 
-from pygame import constants, draw, font, mouse, sprite, surface
+from pygame import constants, draw, font, mouse, sprite, surface, time
 
 
 class Button(sprite.Sprite):
@@ -520,3 +520,55 @@ class ButtonBar(sprite.Sprite):
         )
 
         return 2 * all_w_height + 2 * cls.PADDING
+
+
+class Chronometer(sprite.Sprite):
+    """Graphical implementation of a Chronometer."""
+
+    def __init__(self, screen, colour):
+        """Initialises the Chronometer object"""
+
+        super().__init__()
+
+        self.screen = screen
+        self.colour = colour
+        self.label = Label(screen, "00:00", size=24, bold=True, colour=colour)
+        self.rect = self.label.rect
+        self.ticking = False
+        self.starting_ticks = 0
+        self.seconds = 0
+
+    def draw(self):
+        self.label.draw()
+    
+    def update(self):
+        if self.ticking:
+            self.seconds = (time.get_ticks() - self.starting_ticks) // 1000
+            self.label.update_text(self.next_clock_text(self.seconds))
+
+    def start(self):
+        """Starts counting."""
+
+        self.starting_ticks = time.get_ticks()
+        self.ticking = True
+
+    def reset(self):
+        """Resets the clock to 0 seconds."""
+        
+        self.seconds = 0
+        self.ticking = False
+        self.label.update_text("00:00")
+
+    def stop(self):
+        """Stop counting."""
+
+        self.ticking = False
+
+    @classmethod
+    def next_clock_text(cls, seconds):
+        """Updates the clock text given the seconds."""
+
+        minutes = round(seconds // 60)
+        seconds = seconds - (minutes * 60)
+
+        return "%02d:%02d" % (minutes, seconds)

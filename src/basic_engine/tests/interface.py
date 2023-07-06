@@ -27,8 +27,8 @@ class DebugScene(scene.Scene):
         ]
 
         colour_args = {
-            "outline": (60, 165, 157),
-            "inline": (231, 156, 42),
+            "outline": (60, 40, 157),
+            "inline": (100, 156, 42),
             "inline_on": (90, 61, 85),
             "outline_clicked": (162, 222, 150),
             "bar_surface_colour": (6, 143, 255)
@@ -37,12 +37,18 @@ class DebugScene(scene.Scene):
                                               "right", *actions, **colour_args)
         self.scene_label.rect.center = self.screen_rect.center
 
+        self.timer = interface.Chronometer(screen, (255, 255, 255))
+        self.timer.rect.bottom = self.screen_rect.bottom
+        self.timer.rect.centerx = self.screen_rect.centerx
+
     def draw(self) -> None:
-        self.screen.fill((255, 255, 0))
+        self.screen.fill((0, 0, 0))
         self.button_bar.draw()
         self.scene_label.draw()
+        self.timer.draw()
 
     def update(self):
+        self.timer.update()
         self.button_bar.update()
 
     def update_on_event(self, event) -> None:
@@ -66,6 +72,12 @@ class DebugScene(scene.Scene):
                 self.scene_label.update_text(choice(messages), **self.text_attrs)
                 self.scene_label.rect.centerx = self.screen_rect.centerx
                 self.scene_label.rect.centery = self.screen_rect.centery
+            elif event.key == constants.K_s:
+                self.timer.start()
+            elif event.key == constants.K_p:
+                self.timer.stop()
+            elif event.key == constants.K_r:
+                self.timer.reset()
 
 
 class ButtonBarTestCase(unittest.TestCase):
