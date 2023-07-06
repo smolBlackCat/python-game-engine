@@ -416,7 +416,8 @@ class ButtonBar(sprite.Sprite):
         dimension_outline_h = dimension_inline_h + (2 * cls.PADDING)
         dimension_outline_w = dimension_inline_w + (2 * cls.PADDING)
 
-        root_surface = surface.Surface((dimension_outline_w, dimension_outline_h))
+        root_surface = surface.Surface((dimension_outline_w, dimension_outline_h), flags=constants.SRCALPHA)
+        root_surface.fill((0, 0, 0, 0))
 
         draw.rect(
             root_surface,
