@@ -274,17 +274,17 @@ class ButtonBar(sprite.Sprite):
             self._create_button_sprite(
                 (85, 110, 83),
                 (21, 42, 56),
-                (self.bar_rect.height - 32, 10),
+                (self.bar_rect.height - 32, 1),
             ),
             self._create_button_sprite(
                 (41, 67, 92),
                 (21, 42, 56),
-                (self.bar_rect.height - 32, 10),
+                (self.bar_rect.height - 32, 1),
             ),
             self._create_button_sprite(
                 (85, 110, 83),
                 (209, 212, 201),
-                (self.bar_rect.height - 32, 10),
+                (self.bar_rect.height - 32, 1),
             ),
         ]
 
